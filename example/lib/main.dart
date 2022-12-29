@@ -1,6 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:scanner/scanner_lifecycle_mixin.dart';
-import 'package:scanner/scanner_listener_mixin.dart';
+import 'package:scanner/scanner.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,9 +14,27 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp>
-    with ScannerLifecycleMixin<MyApp>, ScannerListenerMixin<MyApp> {
-  var _code;
+class _MyAppState extends State<MyApp> {
+  void listenScanner() {
+    Scanner.registerListener(listener: onScanned);
+  }
+
+  void onScanned(Map<String, dynamic> data) {
+    print("DATA: $data");
+  }
+
+  @override
+  void initState() {
+    Scanner.init();
+    listenScanner();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    Scanner.unRegisterListener(onScanned);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,24 +46,11 @@ class _MyAppState extends State<MyApp>
         body: Center(
           child: Column(
             children: [
-              Text('Code: $_code'),
+              Text('Code: '),
             ],
           ),
         ),
       ),
     );
-  }
-
-  @override
-  void onEvent(Object code) {
-    setState(() {
-      _code = code;
-      print("ChannelPage: $code");
-    });
-  }
-
-  @override
-  void onError(Object error) {
-    // TODO: implement onError
   }
 }
