@@ -27,7 +27,6 @@ public class ScannerPlugin implements FlutterPlugin, EventChannel.StreamHandler,
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
-
     channel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), CHANNEL);
     context = flutterPluginBinding.getApplicationContext();
     scanner = ScannerFactory.getScanner(context);
@@ -52,12 +51,13 @@ public class ScannerPlugin implements FlutterPlugin, EventChannel.StreamHandler,
 
   @Override
   public void onListen(Object arguments, EventChannel.EventSink events) {
-    eventSink = events;
+    eventSink = events; // Inisialisasi eventSink ketika mendengarkan event
   }
 
   @Override
   public void onCancel(Object arguments) {
     Log.i(TAG, "ScannerPlugin:onCancel");
+    eventSink = null; // Reset eventSink ketika channel dibatalkan
   }
 
   Runnable runnable = () -> {
@@ -85,13 +85,18 @@ public class ScannerPlugin implements FlutterPlugin, EventChannel.StreamHandler,
 
   @Override
   public void onDecodeComplete(DecodeInfo decodeInfo) {
-    HashMap<String, Object> map = new HashMap<String, Object>();
+    HashMap<String, Object> map = new HashMap<>();
     map.put("barcode", decodeInfo.barcode);
     map.put("codetype", decodeInfo.codetype);
     map.put("length", decodeInfo.length);
+
     Log.d(TAG, "onDecodeComplete: Scanned$map");
-    eventSink.success(map);
+
+    // Pastikan eventSink tidak null sebelum memanggil eventSink.success
+    if (eventSink != null) {
+      eventSink.success(map);
+    } else {
+      Log.e(TAG, "onDecodeComplete: EventSink is null, unable to send scan result.");
+    }
   }
 }
-
-
