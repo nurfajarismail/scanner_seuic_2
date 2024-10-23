@@ -43,15 +43,18 @@ public class ScannerPlugin implements FlutterPlugin, EventChannel.StreamHandler,
   public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
     mScanRunning = false;
     ScannerKey.close();
-    scanner.setDecodeInfoCallBack(null);
-    scanner.close();
+    if (scanner != null) {
+        scanner.setDecodeInfoCallBack(null);
+        scanner.close();
+    }
     scanner = null;
+    eventSink = null;
     channel.setStreamHandler(null);
   }
 
   @Override
   public void onListen(Object arguments, EventChannel.EventSink events) {
-    eventSink = events; // Inisialisasi eventSink ketika mendengarkan event
+    eventSink = null; // Inisialisasi eventSink ketika mendengarkan event
   }
 
   @Override
@@ -92,14 +95,11 @@ public class ScannerPlugin implements FlutterPlugin, EventChannel.StreamHandler,
 
     Log.d(TAG, "onDecodeComplete: Scanned$map");
 
-    // Pastikan eventSink tidak null sebelum memanggil eventSink.success
-     // Pastikan kita memanggil eventSink.success di thread UI
-    new Handler(Looper.getMainLooper()).post(() -> {
-        if (eventSink != null) {
-            eventSink.success(map);
-        } else {
-            Log.e(TAG, "onDecodeComplete: EventSink is null, unable to send scan result.");
-        }
-    });
+    if (eventSink != null) {
+        eventSink.success(map);
+    } else {
+        Log.e(TAG, "EventSink is null, cannot send event.");
+    }
+
   }
 }
