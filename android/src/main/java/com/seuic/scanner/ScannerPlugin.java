@@ -93,10 +93,15 @@ public class ScannerPlugin implements FlutterPlugin, EventChannel.StreamHandler,
     map.put("codetype", decodeInfo.codetype);
     map.put("length", decodeInfo.length);
     Log.d(TAG, "onDecodeComplete: Scanned$map");
-    if (eventSink != null) {
-        eventSink.success(map);
-    } else {
-        Log.e(TAG, "EventSink is null, cannot send event.");
-    }
+
+    // Pastikan eventSink tidak null sebelum memanggil eventSink.success
+     // Pastikan kita memanggil eventSink.success di thread UI
+    new Handler(Looper.getMainLooper()).post(() -> {
+        if (eventSink != null) {
+            eventSink.success(map);
+        } else {
+            Log.e(TAG, "onDecodeComplete: EventSink is null, unable to send scan result.");
+        }
+    });
   }
 }
