@@ -92,14 +92,11 @@ public class ScannerPlugin implements FlutterPlugin, EventChannel.StreamHandler,
     map.put("barcode", decodeInfo.barcode);
     map.put("codetype", decodeInfo.codetype);
     map.put("length", decodeInfo.length);
-
     Log.d(TAG, "onDecodeComplete: Scanned$map");
-
     if (eventSink != null) {
         eventSink.success(map);
     } else {
         Log.e(TAG, "EventSink is null, cannot send event.");
     }
-
   }
 }
